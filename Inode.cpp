@@ -1,6 +1,8 @@
 #include"header/common.hpp"
 #include"header/Inode.hpp"
 #include"header/SuperBlock.hpp"
+#include<vector>
+//#include<cstring>
 using namespace std;
 
 extern SuperBlock *sblock;

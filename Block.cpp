@@ -1,68 +1,54 @@
 #include"header/common.hpp"
 #include"header/Block.hpp"
+#include"header/Bitmap.hpp"
 #include"header/SuperBlock.hpp"
+#include<vector>
+#include<cstring>
 using namespace std;
 
-extern char buffer[TOTAL_SPACE];
 extern SuperBlock *sblock;
-vector<Block*> blocks;
+extern char buffer[TOTAL_SPACE];
+extern Bitmap *bitmap;
 
-
-/* void Block::split(){
-    if (pre!=-1)
-        blocks[pre]->next = next;
-    if (next!=-1)
-        blocks[next]->pre = pre;
-    pre=-1;
-    next=-1;
-}
-
-void split(int bid){
-    int &pre = blocks[bid]->pre;
-    int &next = blocks[bid]->next;
-    if (pre!=-1)
-        blocks[pre]->next = next;
-    if (next!=-1)
-        blocks[next]->pre = pre;
-    pre=-1;
-    next=-1;
-}
- */
-
-/* //将块插入链表头部
-void Block::insert(int &list){
-    next=list;
-    blocks[next]->pre = bid;
-    list = bid;
-} */
-
-void input_blocks(){
-    for (int i=INODETABLE_END; i<TOTAL_SPACE; i+=sizeof(blocks)){
-        blocks.push_back((Block*)(buffer+i));
+vector<bid_t> get_free_blocks(int n, Seg seg){
+    vector<bid_t> blocks;
+    if (n>sblock->free_blocks[seg]){
+        return blocks;
     }
-}
-
-//将块插入链表头部
-void insert(int bid, int &list){
-    int &next = blocks[bid]->next;
-    next=list;
-    blocks[next]->pre = bid;
-    list = bid;
-}
-
-//从链表中取出一个块
-int get(int &list){
-    int res = list;
-    list = blocks[list]->next;
-    blocks[res]->next=-1;
-    blocks[list]->pre=-1;
-    return res;
-}
-
-//释放一个链表中的块
-void free(int &list){
-    if (blocks[list]->inode==-1) return;
-    while (list!=-1){
-        insert(get(list),sblock->first_free_block);
+    sblock->free_blocks[seg]-=n;
+    sblock->used_blocks[seg]+=n;
+    for (int i=BOUND[seg][0]; i<BOUND[seg][1]; i++){
+        if (bitmap->data[i]!=0xff){
+            int pos=i*BIT_PER_CHAR;
+            for (int j=0; j<BIT_PER_CHAR; j++){
+                if (!bitmap->at(pos+j)){
+                    blocks.push_back(pos+j);
+                    bitmap->set(pos+j, 1);
+                    //bitmap->swt(pos+j);
+                    n--;
+                    if (n==0) break;
+                }
+            }
+            if (n==0) break;
+        }
     }
+    return blocks;
+}
+
+vector<bid_t> write_blocks(char *p, int size, Seg seg){
+    int nblocks=(size+BLOCK_SIZE-1)/BLOCK_SIZE;
+    vector<bid_t> blocks = get_free_blocks(nblocks, seg);
+    int pos=0;
+    for (auto bid: blocks){
+        if (pos+BLOCK_SIZE<=size)
+            strncpy(buffer+(bid*BLOCK_SIZE), p, BLOCK_SIZE);
+        else
+            strncpy(buffer+(bid*BLOCK_SIZE), p, size-pos);
+        pos+=BLOCK_SIZE;
+    }
+    return blocks;
+}
+
+void erase_block(bid_t bid){
+    bitmap->set(bid, 0);
 }

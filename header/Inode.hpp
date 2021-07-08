@@ -1,4 +1,7 @@
+#pragma once
+
 #include"common.hpp"
+#include"Block.hpp"
 
 struct Inode{
     char name[FILENAME_SIZE];//文件名称
@@ -24,6 +27,7 @@ struct Inode{
         int first,
         int next
     );
+    bid_t blocks[];
 };
 
 void input_inodes();
