@@ -49,5 +49,8 @@ std::vector<bid_t> get_free_blocks(int n, bid_t b, bid_t t);
 //写入数据，返回存放块的bid
 std::vector<bid_t> write_blocks(char *p, int size, bid_t b, bid_t t);
 
+//TODO:写一个块
+void write_block(bid_t bid);
+
 //清除块的数据
 void erase_block(bid_t bid);
