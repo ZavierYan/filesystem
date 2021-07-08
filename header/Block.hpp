@@ -44,13 +44,16 @@ int const BOUND[4][2]{
 };
 
 //在上下界[b,t]内取得n个空闲块
-std::vector<bid_t> get_free_blocks(int n, bid_t b, bid_t t);
+std::vector<bid_t> get_free_blocks(int n, Seg seg);
 
 //写入数据，返回存放块的bid
-std::vector<bid_t> write_blocks(char *p, int size, bid_t b, bid_t t);
+std::vector<bid_t> write_blocks(char *p, int size, Seg seg);
 
 //TODO:写一个块
-void write_block(bid_t bid);
+void write_block(bid_t bid, char *content, int size);
 
 //清除块的数据
 void erase_block(bid_t bid);
+
+//TODO:根据块号返回地址
+Block *block_pointer(bid_t bid);
